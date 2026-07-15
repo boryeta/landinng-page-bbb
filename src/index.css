@@ -1,0 +1,267 @@
+@import '@fontsource/syne/400.css';
+@import '@fontsource/syne/500.css';
+@import '@fontsource/syne/700.css';
+@import '@fontsource/syne/800.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+
+@import 'tailwindcss';
+
+/* ─────────────────────────────────────────────
+   THEME — custom colors & fonts (Tailwind v4)
+   ───────────────────────────────────────────── */
+@theme {
+  --color-negro: #0a0a0a;
+  --color-azul: #1e6fd9;
+  --color-azul-dark: #1558b0;
+  --color-blanco: #f5f5f5;
+  --color-gris: #888888;
+
+  --font-syne: 'Syne', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+}
+
+/* ─────────────────────────────────────────────
+   BASE
+   ───────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Syne', sans-serif;
+  margin: 0;
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────
+   CUSTOM CURSOR (desktop only)
+   ───────────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  body.custom-cursor,
+  body.custom-cursor * {
+    cursor: none;
+  }
+}
+
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #1e6fd9;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition:
+    transform 0.1s ease-out,
+    opacity 0.2s ease-out;
+}
+
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(30, 111, 217, 0.3);
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition:
+    transform 0.25s ease-out,
+    width 0.25s ease-out,
+    height 0.25s ease-out,
+    opacity 0.25s ease-out,
+    border-color 0.25s ease-out;
+}
+
+.cursor-dot.is-hovering {
+  opacity: 0;
+}
+
+.cursor-ring.is-hovering {
+  width: 56px;
+  height: 56px;
+  border-color: rgba(30, 111, 217, 0.6);
+}
+
+/* ─────────────────────────────────────────────
+   HERO NOISE TEXTURE (subtle SVG pseudo-element)
+   ───────────────────────────────────────────── */
+.hero-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ─────────────────────────────────────────────
+   HERO ENTRANCE ANIMATIONS
+   ───────────────────────────────────────────── */
+@keyframes heroLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes heroRight {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes heroUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-line-1 {
+  opacity: 0;
+  animation: heroLeft 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-line-2 {
+  opacity: 0;
+  animation: heroRight 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+}
+
+.hero-sub {
+  opacity: 0;
+  animation: heroUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+}
+
+.hero-btns {
+  opacity: 0;
+  animation: heroUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.45s forwards;
+}
+
+/* Scroll indicator */
+@keyframes scrollBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(10px);
+    opacity: 1;
+  }
+}
+
+.scroll-indicator span {
+  animation: scrollBounce 1.6s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────
+   TICKER
+   ───────────────────────────────────────────── */
+@keyframes tickerScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: tickerScroll 25s linear infinite;
+}
+
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+/* ─────────────────────────────────────────────
+   GLOBAL REVEAL ON SCROLL
+   ───────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────────────
+   REDUCED MOTION
+   ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-line-1,
+  .hero-line-2,
+  .hero-sub,
+  .hero-btns,
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
