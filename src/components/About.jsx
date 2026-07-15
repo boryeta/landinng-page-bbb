@@ -1,9 +1,50 @@
+import { useRef } from 'react'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import SplitType from 'split-type'
+
+gsap.registerPlugin(ScrollTrigger)
+
 export default function About() {
+  const rootRef = useRef(null)
+  const quoteRef = useRef(null)
+
+  useGSAP(
+    () => {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (reduced || !quoteRef.current) return
+
+      const split = new SplitType(quoteRef.current, { types: 'words', tagName: 'span' })
+      gsap.set(split.words, { display: 'inline-block' })
+      gsap.from(split.words, {
+        y: 20,
+        opacity: 0,
+        duration: 0.6,
+        ease: 'power3.out',
+        stagger: 0.05,
+        scrollTrigger: { trigger: quoteRef.current, start: 'top 80%', once: true },
+      })
+
+      // Entrada de la columna izquierda
+      gsap.from('.about-left > *', {
+        y: 30,
+        opacity: 0,
+        duration: 0.7,
+        ease: 'power3.out',
+        stagger: 0.1,
+        scrollTrigger: { trigger: rootRef.current, start: 'top 70%', once: true },
+      })
+
+      return () => split.revert()
+    },
+    { scope: rootRef },
+  )
+
   return (
-    <section id="nosotros" className="bg-[#111111] py-[120px]">
+    <section id="nosotros" ref={rootRef} className="bg-[#111111] py-[120px]">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-16 px-6 md:grid-cols-2 md:px-10">
-        {/* Left column */}
-        <div className="reveal">
+        <div className="about-left">
           <h2 className="font-syne text-[2.2rem] font-extrabold text-blanco md:text-[3rem]">
             Llevant Studio<span className="text-azul">.</span>
           </h2>
@@ -43,9 +84,11 @@ export default function About() {
           </div>
         </div>
 
-        {/* Right column */}
-        <div className="reveal flex items-center" style={{ transitionDelay: '120ms' }}>
-          <blockquote className="font-syne text-[1.8rem] italic leading-snug text-azul">
+        <div className="flex items-center">
+          <blockquote
+            ref={quoteRef}
+            className="font-syne text-[1.8rem] italic leading-snug text-azul"
+          >
             «La web más moderna que hayas tenido, o te devolvemos el dinero.»
           </blockquote>
         </div>

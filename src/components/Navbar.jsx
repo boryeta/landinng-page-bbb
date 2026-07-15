@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
 
 const LINKS = [
   { id: 'servicios', label: 'Servicios' },
@@ -9,33 +10,64 @@ const LINKS = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const [hidden, setHidden] = useState(false)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('')
 
-  // Background on scroll > 50px
+  const listRef = useRef(null)
+  const underlineRef = useRef(null)
+  const linkRefs = useRef({})
+  const lastY = useRef(0)
+
+  // Fondo + ocultar/mostrar según dirección de scroll
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50)
-    onScroll()
+    const onScroll = () => {
+      const y = window.scrollY
+      setScrolled(y > 50)
+      if (y > lastY.current && y > 200) {
+        setHidden(true) // scroll down → ocultar
+      } else {
+        setHidden(false) // scroll up → mostrar
+      }
+      lastY.current = y
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Active section via IntersectionObserver
+  // Sección activa por IntersectionObserver
   useEffect(() => {
     const sections = LINKS.map((l) => document.getElementById(l.id)).filter(Boolean)
     if (!sections.length) return
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) setActive(entry.target.id)
         })
       },
-      { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
+      { rootMargin: '-45% 0px -45% 0px' },
     )
     sections.forEach((s) => observer.observe(s))
     return () => observer.disconnect()
   }, [])
+
+  // Underline deslizante con GSAP hacia el link activo
+  useLayoutEffect(() => {
+    const underline = underlineRef.current
+    const target = active ? linkRefs.current[active] : null
+    if (!underline) return
+    if (!target) {
+      gsap.to(underline, { opacity: 0, duration: 0.2 })
+      return
+    }
+    gsap.to(underline, {
+      x: target.offsetLeft,
+      width: target.offsetWidth,
+      opacity: 1,
+      duration: 0.4,
+      ease: 'power3.out',
+    })
+  }, [active])
 
   const handleNav = (e, id) => {
     e.preventDefault()
@@ -45,12 +77,11 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 z-50 w-full transition-colors duration-300 ${
+      className={`fixed top-0 left-0 z-50 w-full transition-[transform,background-color,box-shadow] duration-300 ${
         scrolled ? 'bg-negro shadow-lg shadow-black/40' : 'bg-transparent'
-      }`}
+      } ${hidden && !open ? '-translate-y-full' : 'translate-y-0'}`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 md:px-10">
-        {/* Logo */}
         <a
           href="#hero"
           onClick={(e) => handleNav(e, 'hero')}
@@ -59,29 +90,33 @@ export default function Navbar() {
           Llevant Studio
         </a>
 
-        {/* Desktop links */}
-        <ul className="hidden items-center gap-8 md:flex">
+        {/* Links desktop con underline GSAP */}
+        <div ref={listRef} className="relative hidden items-center gap-8 md:flex">
           {LINKS.map((link) => (
-            <li key={link.id}>
-              <a
-                href={`#${link.id}`}
-                onClick={(e) => handleNav(e, link.id)}
-                className={`font-inter text-sm transition-colors duration-200 hover:text-blanco ${
-                  active === link.id ? 'text-azul' : 'text-gris'
-                }`}
-              >
-                {link.label}
-              </a>
-            </li>
+            <a
+              key={link.id}
+              ref={(el) => (linkRefs.current[link.id] = el)}
+              href={`#${link.id}`}
+              onClick={(e) => handleNav(e, link.id)}
+              className={`font-inter text-sm transition-colors duration-200 hover:text-blanco ${
+                active === link.id ? 'text-blanco' : 'text-gris'
+              }`}
+            >
+              {link.label}
+            </a>
           ))}
-        </ul>
+          <span
+            ref={underlineRef}
+            className="pointer-events-none absolute -bottom-2 left-0 h-0.5 w-0 bg-azul opacity-0"
+          />
+        </div>
 
-        {/* Mobile hamburger */}
+        {/* Hamburguesa móvil */}
         <button
           aria-label="Abrir menú"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className="flex h-8 w-8 flex-col items-center justify-center gap-1.5 md:hidden"
+          className="relative z-50 flex h-8 w-8 flex-col items-center justify-center gap-1.5 md:hidden"
         >
           <span
             className={`block h-0.5 w-6 bg-blanco transition-transform duration-300 ${
@@ -101,37 +136,25 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Mobile side panel */}
+      {/* Menú móvil con reveal clip-path circular */}
       <div
-        className={`fixed top-0 right-0 z-40 h-screen w-72 transform bg-negro/98 backdrop-blur-md transition-transform duration-300 md:hidden ${
-          open ? 'translate-x-0' : 'translate-x-full'
+        className={`mobile-menu fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-negro md:hidden ${
+          open ? 'is-open' : ''
         }`}
       >
-        <ul className="mt-24 flex flex-col gap-6 px-8">
-          {LINKS.map((link) => (
-            <li key={link.id}>
-              <a
-                href={`#${link.id}`}
-                onClick={(e) => handleNav(e, link.id)}
-                className={`font-syne text-2xl font-bold transition-colors duration-200 ${
-                  active === link.id ? 'text-azul' : 'text-blanco'
-                }`}
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
+        {LINKS.map((link) => (
+          <a
+            key={link.id}
+            href={`#${link.id}`}
+            onClick={(e) => handleNav(e, link.id)}
+            className={`font-syne text-3xl font-bold transition-colors duration-200 ${
+              active === link.id ? 'text-azul' : 'text-blanco'
+            }`}
+          >
+            {link.label}
+          </a>
+        ))}
       </div>
-
-      {/* Overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={() => setOpen(false)}
-          aria-hidden="true"
-        />
-      )}
     </header>
   )
 }
